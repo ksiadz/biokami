@@ -5,6 +5,9 @@ from django.contrib import admin
 from django.views.generic import TemplateView
 from django.views import defaults as default_views
 
+from oscar.app import application as oscar
+from oscarapi.app import application as oscar_api
+
 urlpatterns = [
     path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
     path(
@@ -21,6 +24,13 @@ urlpatterns = [
     ),
     path("accounts/", include("allauth.urls")),
     # Your stuff: custom urls includes go here
+
+    # all the things you already have
+
+    path('store/', oscar.urls),  # > Django-2.0
+    path("api-store-v1/", oscar_api.urls),
+
+
 ] + static(
     settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
 )

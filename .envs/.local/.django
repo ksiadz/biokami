@@ -14,3 +14,6 @@ REDIS_URL=redis://redis:6379/0
 CELERY_FLOWER_USER=debug
 CELERY_FLOWER_PASSWORD=debug
 
+# Sentry
+# ------------------------------------------------------------------------------
+SENTRY_DSN=https://8d010076911241f58115bd786a079058@sentry.io/1390902

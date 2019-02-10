@@ -4,6 +4,9 @@ Base settings to build other settings files upon.
 
 import environ
 
+from oscar.defaults import *
+from oscar import get_core_apps
+
 ROOT_DIR = environ.Path(__file__) - 3  # (biokami/config/settings/base.py - 3 = biokami/)
 APPS_DIR = ROOT_DIR.path('biokami')
 
@@ -58,6 +61,7 @@ DJANGO_APPS = [
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.flatpages',
     # 'django.contrib.humanize', # Handy template tags
     'django.contrib.admin',
 ]
@@ -70,7 +74,8 @@ THIRD_PARTY_APPS = [
     'allauth.socialaccount.providers.google',
     'allauth.socialaccount.providers.linkedin_oauth2',
     'rest_framework',
-]
+    'widget_tweaks',
+] + get_core_apps()
 LOCAL_APPS = [
     'biokami.users.apps.UsersAppConfig',
     # Your stuff: custom apps go here
@@ -137,6 +142,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'oscar.apps.basket.middleware.BasketMiddleware',
+    'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware',
 ]
 
 # STATIC
@@ -165,6 +172,7 @@ MEDIA_URL = '/media/'
 # TEMPLATES
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#templates
+from oscar import OSCAR_MAIN_TEMPLATE_DIR
 TEMPLATES = [
     {
         # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-TEMPLATES-BACKEND
@@ -172,6 +180,7 @@ TEMPLATES = [
         # https://docs.djangoproject.com/en/dev/ref/settings/#template-dirs
         'DIRS': [
             str(APPS_DIR.path('templates')),
+            OSCAR_MAIN_TEMPLATE_DIR
         ],
         'OPTIONS': {
             # https://docs.djangoproject.com/en/dev/ref/settings/#template-debug
@@ -192,6 +201,12 @@ TEMPLATES = [
                 'django.template.context_processors.static',
                 'django.template.context_processors.tz',
                 'django.contrib.messages.context_processors.messages',
+                # oscar processors
+                'oscar.apps.search.context_processors.search_form',
+                'oscar.apps.promotions.context_processors.promotions',
+                'oscar.apps.checkout.context_processors.checkout',
+                'oscar.apps.customer.notifications.context_processors.notifications',
+                'oscar.core.context_processors.metadata',
             ],
         },
     },
@@ -272,3 +287,17 @@ SOCIALACCOUNT_ADAPTER = 'biokami.users.adapters.SocialAccountAdapter'
 
 # Your stuff...
 # ------------------------------------------------------------------------------
+
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'haystack.backends.simple_backend.SimpleEngine',
+    },
+}
+
+OSCAR_INITIAL_ORDER_STATUS = 'Pending'
+OSCAR_INITIAL_LINE_STATUS = 'Pending'
+OSCAR_ORDER_STATUS_PIPELINE = {
+    'Pending': ('Being processed', 'Cancelled',),
+    'Being processed': ('Processed', 'Cancelled',),
+    'Cancelled': (),
+}
